@@ -7,6 +7,7 @@ import { validateEmail } from "../../utils/helper";
 import { API_PATHS } from "../../utils/apiPaths";
 import uploadImage from "../../utils/uploadImage";
 import { UserContext } from "../../context/UserContext";
+import axiosInstance from "../../utils/axiosInstance";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState("");
@@ -17,7 +18,7 @@ const SignUp = () => {
   const [token, setToken] = useState("");
   const [adminInviteToken, setAdminInviteToken] = useState("");
 
-  const [error, setError] = useState("null");
+  const [error, setError] = useState(null);
 
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -43,9 +44,13 @@ const SignUp = () => {
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setError("");
 
-    navigate("/dashboard");
     //SignUp API Call
     try {
       // Upload image if present
@@ -75,7 +80,11 @@ const SignUp = () => {
         }
       }
     } catch (error) {
-      if (error.response && error.response.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         setError(error.response.data.message);
       } else {
         setError("Something went wrong. Please try again later.");
@@ -94,7 +103,7 @@ const SignUp = () => {
         <form onSubmit={handleSignUp}>
           <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
 
-          <div className="grid grid-cols-1 md:grip-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               value={fullName}
               onChange={({ target }) => setFullName(target.value)}

@@ -1,6 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react';
+import Navbar from './Navbar';
+import SideMenu from './SideMenu';
+import { UserContext } from '../../context/UserContext'; // Adjust path as needed
 
 const DashboardLayout = ({ children, activeMenu }) => {
+    const { user } = useContext(UserContext); // ✅ define user here
+
     return (
         <div className=''>
             <Navbar activeMenu={activeMenu} />
@@ -14,7 +19,7 @@ const DashboardLayout = ({ children, activeMenu }) => {
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default DashboardLayout
+export default DashboardLayout;

@@ -22,7 +22,7 @@ const registerUser = async (req, res) => {
         }
 
         // Determine user role: Admin if correct token is provided, otherwise User
-        let role = "member";
+        let role = "user";
         if (
             adminInviteToken &&
             adminInviteToken === process.env.ADMIN_INVITE_TOKEN
@@ -116,7 +116,7 @@ const updateUserProfile = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.nam = req.body.name || user.name;
+        user.name = req.body.name || user.name;
         user.email = req.body.email || user.email;
 
         if (req.body.password) {
