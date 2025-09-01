@@ -37,12 +37,12 @@ const AddAttachmentsInput = ({ attachments, setAttachments }) => {
                             handleDeleteOption(index);
                         }}
                     >
-                        <HiOutlineTrash classname="text-lg text-red-500" />
+                        <HiOutlineTrash className="text-lg text-red-500" />
                     </button>
                 </div>
             ))}
 
-            <div classname="flex items-center gap-5 mt-4">
+            <div className="flex items-center gap-5 mt-4">
                 <div className='flex-1 flex items-center gap-3 border border-gray-100 rounded-md px-3'>
                     <LuPaperclip className='text-gray-400' />
 

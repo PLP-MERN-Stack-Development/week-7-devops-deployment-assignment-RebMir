@@ -43,9 +43,12 @@ const Login = () => {
     try {
       console.log("[Login.jsx] Making login request...");
       console.log("[Login.jsx] Login URL:", API_PATHS.AUTH.LOGIN);
-      console.log("[Login.jsx] Full URL:", axiosInstance.defaults.baseURL + API_PATHS.AUTH.LOGIN);
+      console.log(
+        "[Login.jsx] Full URL:",
+        axiosInstance.defaults.baseURL + API_PATHS.AUTH.LOGIN
+      );
       console.log("[Login.jsx] Login data:", { email, password: "***" });
-      
+
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
         email,
         password,
@@ -74,8 +77,12 @@ const Login = () => {
       console.log("[Login.jsx] Error response:", error.response?.data);
       console.log("[Login.jsx] Error status:", error.response?.status);
       console.log("[Login.jsx] Request URL:", error.config?.url);
-      
-      if (error.response && error.response.data && error.response.data.message) {
+
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         setError(error.response.data.message);
       } else {
         setError("An error occurred during login.");
@@ -117,6 +124,29 @@ const Login = () => {
             Login
           </button>
         </form>
+
+        {/* Signup Option */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-600">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
+            >
+              Sign up here
+            </Link>
+          </p>
+        </div>
+
+        {/* Alternative: Forgot Password Link */}
+        <div className="mt-4 text-center">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-slate-500 hover:text-slate-700 hover:underline transition-colors duration-200"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </div>
     </AuthLayout>
   );

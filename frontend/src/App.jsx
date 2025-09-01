@@ -10,6 +10,7 @@ import CreateTask from "./pages/Admin/CreateTask";
 import UserDashboard from "./pages/User/UserDashboard";
 import MyTasks from "./pages/User/MyTasks";
 import ViewTaskDetails from "./pages/User/ViewTaskDetails";
+import TaskList from "./pages/Admin/TaskList";
 
 import PrivateRoute from "./routes/PrivateRoute";
 import { Root } from "postcss";
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/admin/tasks" element={<ManageTasks />} />
             <Route path="/admin/create-task" element={<CreateTask />} />
             <Route path="/admin/users" element={<ManageUsers />} />
+            <Route path="/admin/edit-task/:taskId" element={<CreateTask />} />
           </Route>
 
           {/* User Routes (Protected) */}
