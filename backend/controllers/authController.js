@@ -58,7 +58,7 @@ const registerUser = async (req, res) => {
 };
 
 // @desc Login user
-// @route POST /api/api/auth/login
+// @route POST /api/auth/login
 // @access Public
 const loginUser = async (req, res) => {
     try {

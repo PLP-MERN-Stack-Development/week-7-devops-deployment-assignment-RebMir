@@ -1,4 +1,5 @@
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL =
+  "hhttps://week-7-devops-deployment-assignment-vkwf.onrender.com";
 
 export const API_PATHS = {
     AUTH: {
