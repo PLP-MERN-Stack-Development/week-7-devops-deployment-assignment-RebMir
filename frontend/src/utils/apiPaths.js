@@ -1,5 +1,5 @@
 export const BASE_URL =
-  "hhttps://week-7-devops-deployment-assignment-vkwf.onrender.com";
+  "https://week-7-devops-deployment-assignment-vkwf.onrender.com";
 
 export const API_PATHS = {
     AUTH: {

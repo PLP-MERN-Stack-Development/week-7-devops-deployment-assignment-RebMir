@@ -15,8 +15,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [token, setToken] = useState("");
-  const [adminInviteToken, setAdminInviteToken] = useState("");
+  const [inviteToken, setInviteToken] = useState(""); // renamed to avoid shadowing
 
   const [error, setError] = useState(null);
 
@@ -51,25 +50,28 @@ const SignUp = () => {
 
     setError("");
 
-    //SignUp API Call
     try {
       // Upload image if present
       if (profilePic) {
         const imgUploadRes = await uploadImage(profilePic);
         profileImageUrl = imgUploadRes.imageUrl || "";
       }
+
+      // API call to backend
       const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
         name: fullName,
         email,
         password,
         profileImageUrl,
-        adminInviteToken,
+        adminInviteToken: inviteToken,
       });
 
-      const { token, role } = response.data;
+      console.log("Register response:", response.data);
 
-      if (token) {
-        localStorage.setItem("token", token);
+      const { token: authToken, role } = response.data;
+
+      if (authToken) {
+        localStorage.setItem("token", authToken);
         updateUser(response.data);
 
         // Redirect based on role
@@ -133,8 +135,8 @@ const SignUp = () => {
               type="password"
             />
             <Input
-              value={token}
-              onChange={({ target }) => setToken(target.value)}
+              value={inviteToken}
+              onChange={({ target }) => setInviteToken(target.value)}
               label="Admin Invite Token"
               placeholder="6 Digit Code"
               type="text"

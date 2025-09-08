@@ -16,7 +16,11 @@ const app = express();
 // Middleware to handle CORS
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        origin: [
+            "http://localhost:5173",
+            "https://week-7-devops-deployment-assignment-ppyj.onrender.com",
+            process.env.FRONTEND_URL
+        ].filter(Boolean), // This removes any undefined values
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
