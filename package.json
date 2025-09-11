@@ -13,17 +13,18 @@
   "license": "ISC",
   "author": "Rebeccah Miruka",
   "type": "commonjs",
-  "main": "server.js",
+  "main": "backend/server.js",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "build": "npm install && cd client && npm install && npm run build",
     "client": "cd client && npm start",
-    "server": "nodemon server.js",
+    "server": "nodemon backend/server.js",
+    "backend": "cd backend && npm run dev",
     "heroku-postbuild": "cd client && npm install && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -60,7 +60,7 @@ const CreateTask = () => {
     };
 
     //Create Task
-    const createTask = async () => {
+const createTask = async () => {
     setLoading(true);
 
     try {
@@ -75,11 +75,14 @@ const CreateTask = () => {
             todoChecklist: todoList,
         });
 
+        console.log("Task created successfully:", response.data);
         toast.success("Task created successfully!");
         clearData();
         
-        // FIXED: Navigate to dashboard to see updated charts
-
+        // Navigate back to dashboard to see the new task
+        navigate('/admin/dashboard', {
+            state: { refresh: true, timestamp: Date.now() }
+        });
         
     } catch (error) {
         console.error("Error creating task:", error);

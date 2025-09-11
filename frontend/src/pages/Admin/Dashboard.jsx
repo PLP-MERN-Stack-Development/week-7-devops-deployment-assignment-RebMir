@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
@@ -124,13 +124,13 @@ const Dashboard = () => {
 
     // Prepare Chart Data
     const prepareChartData = (data) => {
-        console.log("🎯 Preparing chart data with:", data);
+        console.log("Preparing chart data with:", data);
         
         const taskDistribution = data?.taskDistribution || {};
         const taskPriorityLevels = data?.taskPriorityLevels || {};
 
-        console.log("📊 Task Distribution Raw:", taskDistribution);
-        console.log("🎯 Priority Levels Raw:", taskPriorityLevels);
+        console.log("Task Distribution Raw:", taskDistribution);
+        console.log("Priority Levels Raw:", taskPriorityLevels);
 
         const taskDistributionData = [
             { status: "Pending", count: taskDistribution?.Pending || 0 },
@@ -144,45 +144,52 @@ const Dashboard = () => {
             { priority: "High", count: taskPriorityLevels?.High || 0 },
         ];
 
-        console.log("🥧 Final Pie Chart Data:", taskDistributionData);
-        console.log("📊 Final Bar Chart Data:", PriorityLevelData);
+        console.log("Final Pie Chart Data:", taskDistributionData);
+        console.log("Final Bar Chart Data:", PriorityLevelData);
 
         setPieChartData(taskDistributionData);
         setBarChartData(PriorityLevelData);
     }
 
-    const getDashboardData = async () => {
-        console.log("🔄 Fetching dashboard data...");
+    // UPDATED: Enhanced data fetching with better cache busting
+    const getDashboardData = useCallback(async (forceRefresh = false) => {
+        console.log("Fetching dashboard data at:", new Date().toLocaleTimeString(), "Force refresh:", forceRefresh);
         setIsLoading(true);
         
         try {
-            const response = await axiosInstance.get(API_PATHS.TASKS.GET_DASHBOARD_DATA);
+            // Add cache-busting parameter to prevent stale data
+            const url = forceRefresh || location.state?.refresh
+                ? `${API_PATHS.TASKS.GET_DASHBOARD_DATA}?t=${Date.now()}&refresh=true`
+                : `${API_PATHS.TASKS.GET_DASHBOARD_DATA}?t=${Date.now()}`;
             
-            console.log("📊 Raw API Response:", response);
-            console.log("📈 Response Data:", response.data);
-            console.log("🎯 Charts Section:", response.data?.charts);
+            const response = await axiosInstance.get(url);
+            
+            console.log("Raw API Response:", response);
+            console.log("Response Data:", response.data);
+            console.log("Charts Section:", response.data?.charts);
             
             if (response.data) {
                 setDashboardData(response.data);
                 prepareChartData(response.data?.charts || null);
             } else {
-                console.warn("⚠️ No data received from API");
+                console.warn("No data received from API");
             }
         } catch (error) {
-            console.error("❌ Error fetching dashboard data:", error);
-            console.error("❌ Error details:", error.response?.data);
+            console.error("Error fetching dashboard data:", error);
+            console.error("Error details:", error.response?.data);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [location.state?.refresh]);
 
     const onSeeMore = () => {
         navigate('/admin/tasks');
     }
 
+    // UPDATED: Enhanced refresh function
     const refreshDashboard = () => {
-        console.log("🔄 Manual refresh triggered");
-        getDashboardData();
+        console.log("Manual refresh triggered");
+        getDashboardData(true); // Force refresh
         updateGreeting(); // Also refresh greeting
     };
 
@@ -197,28 +204,62 @@ const Dashboard = () => {
         return () => clearInterval(greetingInterval);
     }, [user?.name]);
 
-    // FIXED: Single useEffect that handles both initial load and navigation
+    // UPDATED: Enhanced useEffect with better triggers and cleanup
     useEffect(() => {
-        console.log("🚀 Dashboard useEffect triggered, pathname:", location.pathname);
-        getDashboardData();
-    }, [location.pathname]); // This will trigger on route changes
+        console.log("Dashboard useEffect triggered");
+        console.log("Location pathname:", location.pathname);
+        console.log("Location key:", location.key);
+        console.log("Location state:", location.state);
+        
+        getDashboardData(location.state?.refresh);
+        
+        // Clear refresh state to prevent unnecessary re-renders
+        if (location.state?.refresh) {
+            console.log("Refreshing dashboard after task creation");
+            getDashboardData(true);
 
-    // ADDITIONAL: Force refresh when component becomes visible (browser tab focus)
+            // clear state so it doesn’t loop
+            navigate(location.pathname, { replace: true, state: {} });
+        } else {
+            getDashboardData(false);
+        }
+    }, [location.state?.timestamp, location.pathname]);
+
+    // ENHANCED: Force refresh when component becomes visible with debouncing
     useEffect(() => {
+        let refreshTimeout;
+        
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                console.log("👁️ Page became visible, refreshing...");
-                getDashboardData();
-                updateGreeting(); // Update greeting when tab becomes visible
+                console.log("Page became visible, scheduling refresh...");
+                
+                // Debounce rapid visibility changes
+                clearTimeout(refreshTimeout);
+                refreshTimeout = setTimeout(() => {
+                    getDashboardData(true);
+                    updateGreeting();
+                }, 500);
             }
         };
 
+        const handleFocus = () => {
+            console.log("Window focused, scheduling refresh...");
+            clearTimeout(refreshTimeout);
+            refreshTimeout = setTimeout(() => {
+                getDashboardData(true);
+                updateGreeting();
+            }, 300);
+        };
+
         document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
         
         return () => {
+            clearTimeout(refreshTimeout);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
         };
-    }, []);
+    }, [getDashboardData]);
 
     // Get CSS classes for time-based styling
     const getGreetingClasses = () => {
@@ -257,14 +298,14 @@ const Dashboard = () => {
                         </div>
                     </div>
                     
-                    {/* DEBUG: Add refresh button */}
+                    {/* UPDATED: Enhanced refresh button with better visual feedback */}
                     <button 
                         onClick={refreshDashboard} 
-                        className={`flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors ${isLoading ? 'opacity-50' : ''}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={isLoading}
                     >
                         <LuRefreshCw className={`text-sm ${isLoading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        {isLoading ? 'Refreshing...' : 'Refresh'}
                     </button>
                 </div>
 

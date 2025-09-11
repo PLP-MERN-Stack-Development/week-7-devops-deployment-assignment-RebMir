@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -18,7 +18,6 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://week-7-devops-deployment-assignment-ppyj.onrender.com",
             process.env.FRONTEND_URL
         ].filter(Boolean), // This removes any undefined values
         methods: ["GET", "POST", "PUT", "DELETE"],

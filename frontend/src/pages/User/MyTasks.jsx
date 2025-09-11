@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPaths";
 import { LuFileSpreadsheet } from "react-icons/lu";
 import TaskStatusTabs from "../../components/TaskStatusTabs";
 import TaskCard from "../../components/Cards/TaskCard";
+import { API_PATHS } from "../../utils/apiPaths"; 
 
 const MyTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
@@ -15,45 +15,40 @@ const MyTasks = () => {
 
   const navigate = useNavigate();
 
-  const getAllTasks = async () => {
+  const getUserTasks = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, {
-        params: {
-          status: filterStatus === "All" ? "" : filterStatus,
-        },
+      // ✅ Correct usage
+      const response = await axiosInstance.get(API_PATHS.TASKS.GET_MY_TASKS, {
+        params: filterStatus !== "All" ? { status: filterStatus } : {},
       });
 
-      // Debug logs
-      console.log("API Response:", response.data);
-      console.log("Tasks received:", response.data);
+      console.log("🔥 User API Response:", response.data);
 
-      // API returns tasks array directly, not wrapped in a tasks property
-      setAllTasks(Array.isArray(response.data) ? response.data : []);
+      const tasks = Array.isArray(response.data) ? response.data : [];
+      setAllTasks(tasks);
 
-      //Map statusSummary data with fixed labels and order
-      // Since statusSummary is not in the response, calculate counts from the tasks
-      const allCount = Array.isArray(response.data) ? response.data.length : 0;
-      const pendingCount = Array.isArray(response.data)
-        ? response.data.filter((task) => task.status === "Pending").length
-        : 0;
-      const inProgressCount = Array.isArray(response.data)
-        ? response.data.filter((task) => task.status === "In Progress").length
-        : 0;
-      const completedCount = Array.isArray(response.data)
-        ? response.data.filter((task) => task.status === "Completed").length
-        : 0;
+      // Compute tab counts
+      const allCount = tasks.length;
+      const pendingCount = tasks.filter((t) => t.status === "Pending").length;
+      const inProgressCount = tasks.filter(
+        (t) => t.status === "In Progress"
+      ).length;
+      const completedCount = tasks.filter(
+        (t) => t.status === "Completed"
+      ).length;
 
-      const statusArray = [
+      setTabs([
         { label: "All", count: allCount },
         { label: "Pending", count: pendingCount },
         { label: "In Progress", count: inProgressCount },
         { label: "Completed", count: completedCount },
-      ];
-
-      setTabs(statusArray);
+      ]);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error(
+        "Error fetching tasks:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -64,11 +59,11 @@ const MyTasks = () => {
   };
 
   useEffect(() => {
-    getAllTasks();
+    getUserTasks();
   }, [filterStatus]);
 
   return (
-    <DashboardLayout activeMenu="Manage Tasks">
+    <DashboardLayout activeMenu="My Tasks">
       <div className="my-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between">
           <h2 className="text-xl md:text-xl font-medium">My Tasks</h2>
@@ -88,32 +83,27 @@ const MyTasks = () => {
               <p>Loading tasks...</p>
             </div>
           ) : allTasks?.length > 0 ? (
-            allTasks.map((item, index) => {
-              console.log("Rendering task:", item); // Debug log
-              return (
-                <TaskCard
-                  key={item._id}
-                  title={item.title || ""}
-                  description={item.description || ""}
-                  priority={item.priority || "Low"}
-                  status={item.status || "Pending"}
-                  progress={item.progress || 0}
-                  createdAt={item.createdAt}
-                  dueDate={item.dueDate}
-                  assignedTo={
-                    item.assignedTo?.map(
-                      (assignee) => assignee.profileImageUrl
-                    ) || []
-                  }
-                  attachmentCount={item.attachments?.length || 0}
-                  completedTodoCount={item.completedTodoCount || 0}
-                  todoChecklist={item.todoChecklist || []}
-                  onClick={() => {
-                    handleClick(item._id);
-                  }}
-                />
-              );
-            })
+            allTasks.map((item) => (
+              <TaskCard
+                key={item._id}
+                title={item.title || ""}
+                description={item.description || ""}
+                priority={item.priority || "Low"}
+                status={item.status || "Pending"}
+                progress={item.progress || 0}
+                createdAt={item.createdAt}
+                dueDate={item.dueDate}
+                assignedTo={
+                  item.assignedTo?.map(
+                    (assignee) => assignee.profileImageUrl
+                  ) || []
+                }
+                attachmentCount={item.attachments?.length || 0}
+                completedTodoCount={item.completedTodoCount || 0}
+                todoChecklist={item.todoChecklist || []}
+                onClick={() => handleClick(item._id)}
+              />
+            ))
           ) : (
             <div className="col-span-full text-center py-8">
               <LuFileSpreadsheet className="mx-auto text-4xl text-gray-400 mb-4" />
