@@ -18,6 +18,7 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
+            "https://taskmanager-hxr3.onrender.com",
             process.env.FRONTEND_URL
         ].filter(Boolean), // This removes any undefined values
         methods: ["GET", "POST", "PUT", "DELETE"],
